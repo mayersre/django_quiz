@@ -22,13 +22,22 @@ class MCQuestion(Question):
                     "to the user"),
         verbose_name=_("Answer Order"))
 
-    def check_if_correct(self, guess):
-        answer = Answer.objects.get(id=guess)
-
-        if answer.correct is True:
-            return True
-        else:
-            return False
+    def check_if_correct(self, guesses):
+        #
+        filterqs=models.Q()
+        # add a filter for each answer
+        for guess in guesses :
+            filterqs = filterqs | models.Q(id=guess)
+        #
+        answers = Answer.objects.filter(filterqs)
+        #
+        retval=False
+        for answer in answers :
+            if answer.correct is True:
+                retval=True
+            else:
+                return False
+        return retval
 
     def order_answers(self, queryset):
         if self.answer_order == 'content':
